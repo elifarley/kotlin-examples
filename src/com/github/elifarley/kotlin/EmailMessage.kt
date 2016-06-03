@@ -1,4 +1,4 @@
-package br.com.m4u
+package com.github.elifarley.kotlin
 
 import java.io.Serializable
 
