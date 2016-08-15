@@ -3,12 +3,14 @@ package inotify
 import java.io.IOException
 import java.nio.file.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 // Simple class to watch directory events.
-class DirectoryWatcher(rootPathArg: String) {
+class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executors.newSingleThreadExecutor()) {
 
     private val rootPath = Paths.get(rootPathArg)
-    private val queue = rootPath.enqueueEvents()
+    private val queue = rootPath.enqueueEvents(executor = executor)
 
     val next: Path?
         get() {
@@ -27,18 +29,20 @@ class DirectoryWatcher(rootPathArg: String) {
 
 }
 
-fun String.watchDir() = DirectoryWatcher(this)
+fun String.watchDir(executor: ExecutorService = Executors.newSingleThreadExecutor())
+        = DirectoryWatcher(this, executor)
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinkedQueue<Path>(),
-                       sleepInMillis: Long = 500,
+                       sleepInMillis: Long = 500, executor: ExecutorService = Executors.newSingleThreadExecutor(),
                        kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): ConcurrentLinkedQueue<Path> {
-    Thread({
+    executor.execute({
+        Thread.currentThread().name = "enqueueEvents[$kind:${this.toAbsolutePath()}]"
         try {
             val watchService = this@enqueueEvents.fileSystem.newWatchService()
             this@enqueueEvents.register(watchService, kind)
 
             // loop forever to watch directory
-            while (true) {
+            while (!Thread.currentThread().isInterrupted) {
                 val watchKey: WatchKey
                 watchKey = watchService.take() // this call is blocking until events are present
 
@@ -64,22 +68,23 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
             ex.printStackTrace()  // don't do this in production code.
         }
 
-    }, "enqueueEvents[$kind:${this.toAbsolutePath()}]").start()
+    })
     return eventQueue
 
 }
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
-                       sleepInMillis: Long = 500,
+                       sleepInMillis: Long = 500, executor: ExecutorService = Executors.newSingleThreadExecutor(),
                        vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Path {
-    Thread({
+    executor.execute({
+        Thread.currentThread().name = "enqueueEvents[$kinds:${this.toAbsolutePath()}]"
 
         try {
             val watchService = this@enqueueEvents.fileSystem.newWatchService()
             this@enqueueEvents.register(watchService, *kinds)
 
             // loop forever to watch directory
-            while (true) {
+            while (!Thread.currentThread().isInterrupted) {
                 val watchKey: WatchKey
                 watchKey = watchService.take() // this call is blocking until events are present
 
@@ -100,11 +105,10 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
         } catch (ex: InterruptedException) {
             println("Interrupted. Goodbye")
 
-
         } catch (ex: IOException) {
             ex.printStackTrace()  // don't do this in production code.
         }
-    }, "enqueueEvents[$kinds:${this.toAbsolutePath()}]").start()
+    })
     return this@enqueueEvents
 
 }
