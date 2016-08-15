@@ -6,6 +6,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+interface PathHandler {
+    fun handle(path: Path)
+}
+
 // Simple class to watch directory events.
 class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executors.newSingleThreadExecutor()) {
 
@@ -27,6 +31,12 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
         return result
     }
 
+    fun loop(pathHandler: PathHandler, sleepInMillis: Long = 5000) {
+        while (!Thread.currentThread().isInterrupted) {
+            pathHandler.handle(waitNext(sleepInMillis))
+        }
+
+    }
 }
 
 fun String.watchDir(executor: ExecutorService = Executors.newSingleThreadExecutor())
