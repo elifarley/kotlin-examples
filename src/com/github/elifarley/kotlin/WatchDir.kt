@@ -1,23 +1,14 @@
 package inotify
 
 import java.io.IOException
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchEvent
-import java.nio.file.WatchKey
+import java.nio.file.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 // Simple class to watch directory events.
 class DirectoryWatcher(rootPathArg: String) {
 
-    private val rootPath: Path
-    private val queue: ConcurrentLinkedQueue<Path>
-
-    init {
-        rootPath = FileSystems.getDefault().getPath(rootPathArg)
-        queue = rootPath.enqueueEvents()
-    }
+    private val rootPath = Paths.get(rootPathArg)
+    private val queue = rootPath.enqueueEvents()
 
     val next: Path?
         get() {
@@ -39,7 +30,7 @@ class DirectoryWatcher(rootPathArg: String) {
 fun String.watchDir() = DirectoryWatcher(this)
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinkedQueue<Path>(),
-                       timeoutInMillis: Long = 500,
+                       sleepInMillis: Long = 500,
                        kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): ConcurrentLinkedQueue<Path> {
     Thread({
         try {
@@ -53,11 +44,11 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
 
                 for (event in watchKey.pollEvents()) {
                     val path = event.context() as Path
-                    while (!eventQueue.offer(path)) Thread.sleep(timeoutInMillis)
+                    while (!eventQueue.offer(path)) Thread.sleep(sleepInMillis)
                 }
 
 
-                // if the watched directed gets deleted, get out of run method
+                // if the watched directed gets deleted, break loop
                 if (!watchKey.reset()) {
                     println("No longer valid")
                     watchKey.cancel()
@@ -70,7 +61,7 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
             println("Interrupted. Goodbye")
 
         } catch (ex: IOException) {
-            ex.printStackTrace()  // don't do this in production code. Use a loggin framework
+            ex.printStackTrace()  // don't do this in production code.
         }
 
     }, "enqueueEvents[$kind:${this.toAbsolutePath()}]").start()
@@ -79,7 +70,7 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
 }
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
-                       timeoutInMillis: Long = 500,
+                       sleepInMillis: Long = 500,
                        vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Path {
     Thread({
 
@@ -93,11 +84,11 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
                 watchKey = watchService.take() // this call is blocking until events are present
 
                 for (event in watchKey.pollEvents()) {
-                    while (!eventQueue.offer(event)) Thread.sleep(timeoutInMillis)
+                    while (!eventQueue.offer(event)) Thread.sleep(sleepInMillis)
                 }
 
 
-                // if the watched directed gets deleted, get out of run method
+                // if the watched directed gets deleted, break loop
                 if (!watchKey.reset()) {
                     println("No longer valid")
                     watchKey.cancel()
@@ -111,7 +102,7 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
 
 
         } catch (ex: IOException) {
-            ex.printStackTrace()  // don't do this in production code. Use a loggin framework
+            ex.printStackTrace()  // don't do this in production code.
         }
     }, "enqueueEvents[$kinds:${this.toAbsolutePath()}]").start()
     return this@enqueueEvents
@@ -120,7 +111,6 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
 
 object FileEventTest {
 
-    @Throws(InterruptedException::class)
     @JvmStatic fun main(vararg args: String) {
 
         var p: Path? = null
