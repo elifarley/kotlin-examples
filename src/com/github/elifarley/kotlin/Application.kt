@@ -4,44 +4,24 @@ import com.m4u.cielo.ws.pushnotification.unit
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import java.nio.file.Path
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @SpringBootApplication
 open class Application {
 
     private val executorService = Executors.newFixedThreadPool(2)
 
+    private val pathHandler = object: PathHandler {
+        override fun handle(path: Path) {
+            println("Path: $path")
+        }
+    }
+
     @Bean
-    open fun myDirWatcherBean() = object {
-        @PostConstruct
-        fun init() {
-            val dirWatcher = "/tmp/watch".watchDir(executorService)
-            executorService.execute({ handleNewFile(dirWatcher)})
-            executorService.shutdown()
-        }
-
-        private fun handleNewFile(dirWatcher: DirectoryWatcher) {
-            while (!Thread.currentThread().isInterrupted) {
-                var p = dirWatcher.waitNext(5 * 1000 )
-                println(p.toString())
-            }
-        }
-
-        @PreDestroy
-        fun beanDestroy() {
-            if (executorService == null) return
-            try {
-                // wait 1 second for closing all threads
-                executorService.awaitTermination(1, TimeUnit.SECONDS)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-            }
-
-        }
-
+    open fun myDirWatcherBean(): Any {
+        return dirWatcherBean(
+                "/tmp/watch", pathHandler, 2 * 1000, executorService)
     }
 
 }
