@@ -123,13 +123,10 @@ object FileEventTest {
     @Throws(InterruptedException::class)
     @JvmStatic fun main(vararg args: String) {
 
-        val dirWatcher = "/tmp/watch".watchDir()
-
-        // interrupt the program after 10 seconds to stop it.
-//        Thread.sleep(60000)
         var p: Path? = null
         var i: Int = 0
 
+        val dirWatcher = "/tmp/watch".watchDir()
         while (i++ < 10) {
             p = dirWatcher.waitNext()
             println(i.toString() + ": " + p.toString())
