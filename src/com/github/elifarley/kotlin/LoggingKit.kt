@@ -18,48 +18,32 @@ import kotlin.reflect.companionObject
  */
 
 // Return logger for Java class, if companion object fix the name
-fun <T: Any> logger(forClass: Class<T>): Logger {
-    return LoggerFactory.getLogger(unwrapCompanionClass(forClass).name)
-}
+fun <T: Any> logger(forClass: Class<T>): Logger = LoggerFactory.getLogger(unwrapCompanionClass(forClass).name)
 
 // Return logger for Kotlin class
-fun <T: Any> logger(forClass: KClass<T>): Logger {
-    return logger(forClass.java)
-}
+fun <T: Any> logger(forClass: KClass<T>): Logger = logger(forClass.java)
 
 // unwrap companion class to enclosing class given a Java Class
-fun <T: Any> unwrapCompanionClass(ofClass: Class<T>): Class<*> {
-    return if (ofClass.enclosingClass != null && ofClass.enclosingClass.kotlin.companionObject?.java == ofClass) {
+fun <T: Any> unwrapCompanionClass(ofClass: Class<T>): Class<*> =
+    if (ofClass.enclosingClass != null && ofClass.enclosingClass.kotlin.companionObject?.java == ofClass) {
         ofClass.enclosingClass
     } else {
         ofClass
     }
-}
 
 // unwrap companion class to enclosing class given a Kotlin Class
-fun <T: Any> unwrapCompanionClass(ofClass: KClass<T>): KClass<*> {
-    return unwrapCompanionClass(ofClass.java).kotlin
-}
+fun <T: Any> unwrapCompanionClass(ofClass: KClass<T>): KClass<*> = unwrapCompanionClass(ofClass.java).kotlin
 
 // return a lazy logger property delegate for enclosing class
-fun <R : Any> R.lazyLogger(): Lazy<Logger> {
-    return lazy { logger(this.javaClass) }
-}
+fun <R : Any> R.lazyLogger(): Lazy<Logger> = lazy { logger(this.javaClass) }
 
 // return a logger property delegate for enclosing class
-fun <R : Any> R.injectLogger(): Lazy<Logger> {
-    return lazyOf(logger(this.javaClass))
-}
+fun <R : Any> R.injectLogger(): Lazy<Logger> = lazyOf(logger(this.javaClass))
 
 interface Loggable {
     val LOG: Logger  // abstract required field
-
-    fun logger(): Logger {
-        return logger(this.javaClass)
-    }
+    fun logger(): Logger = logger(this.javaClass)
 }
 
 // abstract base class to provide logging, intended for companion objects more than classes but works for either
-abstract class WithLogging: Loggable {
-    override val LOG by lazyLogger()
-}
+abstract class WithLogging: Loggable { override val LOG by lazyLogger() }
