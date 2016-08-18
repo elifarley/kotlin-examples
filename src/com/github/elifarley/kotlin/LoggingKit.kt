@@ -45,5 +45,9 @@ interface Loggable {
     fun logger(): Logger = logger(this.javaClass)
 }
 
-// abstract base class to provide logging, intended for companion objects more than classes but works for either
-abstract class WithLogging: Loggable { override val LOG by lazyLogger() }
+/**
+ * Base class to provide logging.
+ * Intended for companion objects more than classes but works for either.
+ * Usage example: `companion object: WithLogging() {}`
+ */
+abstract class WithLogging { val LOG: Logger by lazyLogger() }
