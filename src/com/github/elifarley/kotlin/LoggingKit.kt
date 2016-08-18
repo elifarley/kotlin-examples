@@ -61,5 +61,5 @@ interface Loggable {
 
 // abstract base class to provide logging, intended for companion objects more than classes but works for either
 abstract class WithLogging: Loggable {
-    override val LOG = logger()
+    override val LOG by lazyLogger()
 }
