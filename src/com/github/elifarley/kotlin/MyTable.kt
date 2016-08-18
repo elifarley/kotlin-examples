@@ -4,7 +4,7 @@ import javax.persistence.*
 import java.math.BigDecimal
 import java.util.Date
 
-// Insert rows via stored procedure
+// Insert rows via stored procedure using Spring Data
 
 /*
 MS-SQL:
