@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 interface PathHandler {
+
     fun handle(path: Path)
     fun handleExistingFiles(baseDir: Path) =
             Files.newDirectoryStream(baseDir, object : DirectoryStream.Filter<Path> {
@@ -22,8 +23,14 @@ interface PathHandler {
 // Simple class to watch directory events.
 class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executors.newSingleThreadExecutor()) {
 
+    companion object : WithLogging() {}
+
     private val rootPath = Paths.get(rootPathArg)
     private val queue = rootPath.enqueueEvents(executor = executor)
+
+    init {
+        LOG.warn("STARTED watching dir ${rootPath.toAbsolutePath()}")
+    }
 
     val next: Path?
         get() {
@@ -83,7 +90,7 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
 
                 // if the watched directed gets deleted, break loop
                 if (!watchKey.reset()) {
-                    println("No longer valid")
+                    DirectoryWatcher.LOG.warn("No longer valid")
                     watchKey.cancel()
                     watchService.close()
                     break
@@ -91,10 +98,10 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
             }
 
         } catch (ex: InterruptedException) {
-            println("Interrupted. Goodbye")
+            DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
 
         } catch (ex: IOException) {
-            ex.printStackTrace()  // don't do this in production code.
+            DirectoryWatcher.LOG.warn("", ex)
         }
 
     })
@@ -124,7 +131,7 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
 
                 // if the watched directed gets deleted, break loop
                 if (!watchKey.reset()) {
-                    println("No longer valid")
+                    DirectoryWatcher.LOG.warn("No longer valid")
                     watchKey.cancel()
                     watchService.close()
                     break
@@ -132,10 +139,10 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
             }
 
         } catch (ex: InterruptedException) {
-            println("Interrupted. Goodbye")
+            DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
 
         } catch (ex: IOException) {
-            ex.printStackTrace()  // don't do this in production code.
+            DirectoryWatcher.LOG.warn("", ex)
         }
     })
     return this@enqueueEvents
@@ -152,7 +159,7 @@ object FileEventTest {
         val dirWatcher = "/tmp/watch".watchDir()
         while (i++ < 10) {
             p = dirWatcher.waitNext()
-            println(i.toString() + ": " + p.toString())
+            DirectoryWatcher.LOG.warn(i.toString() + ": " + p.toString())
         }
 
     }
