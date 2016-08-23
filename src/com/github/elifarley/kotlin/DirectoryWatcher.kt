@@ -8,6 +8,15 @@ import java.util.concurrent.Executors
 
 interface PathHandler {
     fun handle(path: Path)
+    fun handleExistingFiles(baseDir: Path) =
+            Files.newDirectoryStream(baseDir, object : DirectoryStream.Filter<Path> {
+                override fun accept(entry: Path) = !Files.isDirectory(entry)
+            }).use { directoryStream ->
+                for (path in directoryStream) {
+                    this.handle(path)
+                }
+            }
+
 }
 
 // Simple class to watch directory events.
@@ -48,6 +57,13 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
     executor.execute({
         Thread.currentThread().name = "enqueueEvents[$kind:${this.toAbsolutePath()}]"
         try {
+
+            object:PathHandler {
+                override fun handle(path: Path) {
+                    eventQueue.add(path)
+                }
+            }.handleExistingFiles(this)
+
             val watchService = this@enqueueEvents.fileSystem.newWatchService()
             this@enqueueEvents.register(watchService, kind)
 
