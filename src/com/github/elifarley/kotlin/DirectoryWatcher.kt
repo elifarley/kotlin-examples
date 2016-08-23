@@ -26,9 +26,10 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
     companion object : WithLogging() {}
 
     private val rootPath = Paths.get(rootPathArg)
-    private val queue = rootPath.enqueueEvents(executor = executor)
+    private val queue = ConcurrentLinkedQueue<Path>()
 
     init {
+        executor.execute({rootPath.enqueuePaths(this.queue) })
         LOG.warn("STARTED watching dir ${rootPath.toAbsolutePath()}")
     }
 
@@ -61,11 +62,10 @@ fun String.watchDir(executor: ExecutorService = Executors.newSingleThreadExecuto
 fun String.watchDirLoop(pathHandler: PathHandler, sleepInMillis: Long = 5000, executor: ExecutorService = Executors.newFixedThreadPool(2))
         = executor.execute({ this.watchDir(executor).loop(pathHandler, sleepInMillis) })
 
-fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinkedQueue<Path>(),
-                       sleepInMillis: Long = 500, executor: ExecutorService = Executors.newSingleThreadExecutor(),
-                       kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): ConcurrentLinkedQueue<Path> {
-    executor.execute({
-        Thread.currentThread().name = "enqueueEvents[$kind:${this.toAbsolutePath()}]"
+fun Path.enqueuePaths(eventQueue: ConcurrentLinkedQueue<Path>,
+                      sleepInMillis: Long = 500, kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): Unit {
+
+        Thread.currentThread().name = "enqueuePaths[$kind:${this.toAbsolutePath()}]"
         try {
 
             object:PathHandler {
@@ -74,8 +74,8 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
                 }
             }.handleExistingFiles(this)
 
-            val watchService = this@enqueueEvents.fileSystem.newWatchService()
-            this@enqueueEvents.register(watchService, kind)
+            val watchService = this@enqueuePaths.fileSystem.newWatchService()
+            this@enqueuePaths.register(watchService, kind)
 
             // loop forever to watch directory
             while (!Thread.currentThread().isInterrupted) {
@@ -104,18 +104,15 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinke
             DirectoryWatcher.LOG.warn("", ex)
         }
 
-    })
-    return eventQueue
-
 }
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
-                       sleepInMillis: Long = 500, executor: ExecutorService = Executors.newSingleThreadExecutor(),
-                       vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Path {
-    executor.execute({
+                      sleepInMillis: Long = 500, vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Unit {
+
         Thread.currentThread().name = "enqueueEvents[$kinds:${this.toAbsolutePath()}]"
 
         try {
+
             val watchService = this@enqueueEvents.fileSystem.newWatchService()
             this@enqueueEvents.register(watchService, *kinds)
 
@@ -144,8 +141,6 @@ fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
         } catch (ex: IOException) {
             DirectoryWatcher.LOG.warn("", ex)
         }
-    })
-    return this@enqueueEvents
 
 }
 
