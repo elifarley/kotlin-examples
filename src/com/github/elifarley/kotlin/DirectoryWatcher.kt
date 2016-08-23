@@ -11,9 +11,7 @@ interface PathHandler {
 }
 
 fun Path.handleExistingFiles(pathHandler: PathHandler) =
-        Files.newDirectoryStream(this, object : DirectoryStream.Filter<Path> {
-            override fun accept(entry: Path) = !Files.isDirectory(entry)
-        }).use { directoryStream ->
+        Files.newDirectoryStream(this) { entry -> !Files.isDirectory(entry) }.use { directoryStream ->
             for (path in directoryStream) {
                 pathHandler.handle(path)
             }
