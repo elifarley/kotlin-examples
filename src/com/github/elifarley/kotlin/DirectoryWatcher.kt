@@ -7,18 +7,17 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 interface PathHandler {
-
     fun handle(path: Path)
-    fun handleExistingFiles(baseDir: Path) =
-            Files.newDirectoryStream(baseDir, object : DirectoryStream.Filter<Path> {
-                override fun accept(entry: Path) = !Files.isDirectory(entry)
-            }).use { directoryStream ->
-                for (path in directoryStream) {
-                    this.handle(path)
-                }
-            }
-
 }
+
+fun Path.handleExistingFiles(pathHandler: PathHandler) =
+        Files.newDirectoryStream(this, object : DirectoryStream.Filter<Path> {
+            override fun accept(entry: Path) = !Files.isDirectory(entry)
+        }).use { directoryStream ->
+            for (path in directoryStream) {
+                pathHandler.handle(path)
+            }
+        }
 
 // Simple class to watch directory events.
 class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executors.newSingleThreadExecutor()) {
@@ -29,7 +28,7 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
     private val queue = ConcurrentLinkedQueue<Path>()
 
     init {
-        executor.execute({rootPath.enqueuePaths(this.queue) })
+        executor.execute({ rootPath.enqueuePaths(this.queue) })
         LOG.warn("STARTED watching dir ${rootPath.toAbsolutePath()}")
     }
 
@@ -65,82 +64,83 @@ fun String.watchDirLoop(pathHandler: PathHandler, sleepInMillis: Long = 5000, ex
 fun Path.enqueuePaths(eventQueue: ConcurrentLinkedQueue<Path>,
                       sleepInMillis: Long = 500, kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): Unit {
 
-        Thread.currentThread().name = "enqueuePaths[$kind:${this.toAbsolutePath()}]"
-        try {
+    Thread.currentThread().name = "enqueuePaths[$kind:${this.toAbsolutePath()}]"
+    try {
 
-            object:PathHandler {
-                override fun handle(path: Path) {
-                    eventQueue.add(path)
-                }
-            }.handleExistingFiles(this)
+        this.handleExistingFiles(
+                object : PathHandler {
+                    override fun handle(path: Path) {
+                        eventQueue.add(path)
+                    }
+                })
 
-            val watchService = this@enqueuePaths.fileSystem.newWatchService()
-            this@enqueuePaths.register(watchService, kind)
+        val watchService = this@enqueuePaths.fileSystem.newWatchService()
+        this@enqueuePaths.register(watchService, kind)
 
-            // loop forever to watch directory
-            while (!Thread.currentThread().isInterrupted) {
-                val watchKey: WatchKey
-                watchKey = watchService.take() // this call is blocking until events are present
+        // loop forever to watch directory
+        while (!Thread.currentThread().isInterrupted) {
+            val watchKey: WatchKey
+            watchKey = watchService.take() // this call is blocking until events are present
 
-                for (event in watchKey.pollEvents()) {
-                    val path = event.context() as Path
-                    while (!eventQueue.offer(path)) Thread.sleep(sleepInMillis)
-                }
-
-
-                // if the watched directed gets deleted, break loop
-                if (!watchKey.reset()) {
-                    DirectoryWatcher.LOG.warn("No longer valid")
-                    watchKey.cancel()
-                    watchService.close()
-                    break
-                }
+            for (event in watchKey.pollEvents()) {
+                val path = event.context() as Path
+                while (!eventQueue.offer(path)) Thread.sleep(sleepInMillis)
             }
 
-        } catch (ex: InterruptedException) {
-            DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
 
-        } catch (ex: IOException) {
-            DirectoryWatcher.LOG.warn("", ex)
+            // if the watched directed gets deleted, break loop
+            if (!watchKey.reset()) {
+                DirectoryWatcher.LOG.warn("No longer valid")
+                watchKey.cancel()
+                watchService.close()
+                break
+            }
         }
+
+    } catch (ex: InterruptedException) {
+        DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
+
+    } catch (ex: IOException) {
+        DirectoryWatcher.LOG.warn("", ex)
+    }
 
 }
 
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<WatchEvent<*>>,
-                      sleepInMillis: Long = 500, vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Unit {
+                       sleepInMillis: Long = 500, vararg kinds: WatchEvent.Kind<*> = arrayOf(StandardWatchEventKinds.ENTRY_CREATE)): Unit {
 
-        Thread.currentThread().name = "enqueueEvents[$kinds:${this.toAbsolutePath()}]"
+    Thread.currentThread().name = "enqueueEvents[$kinds:${this.toAbsolutePath()}]"
 
-        try {
+    try {
 
-            val watchService = this@enqueueEvents.fileSystem.newWatchService()
-            this@enqueueEvents.register(watchService, *kinds)
+        val watchService = this@enqueueEvents.fileSystem.newWatchService()
+        this@enqueueEvents.register(watchService, *kinds)
 
-            // loop forever to watch directory
-            while (!Thread.currentThread().isInterrupted) {
-                val watchKey: WatchKey
-                watchKey = watchService.take() // this call is blocking until events are present
+        // loop forever to watch directory
+        while (!Thread.currentThread().isInterrupted) {
+            val watchKey: WatchKey
+            watchKey = watchService.take() // this call is blocking until events are present
 
-                for (event in watchKey.pollEvents()) {
-                    while (!eventQueue.offer(event)) Thread.sleep(sleepInMillis)
-                }
-
-
-                // if the watched directed gets deleted, break loop
-                if (!watchKey.reset()) {
-                    DirectoryWatcher.LOG.warn("No longer valid")
-                    watchKey.cancel()
-                    watchService.close()
-                    break
-                }
+            for (event in watchKey.pollEvents()) {
+                while (!eventQueue.offer(event)) Thread.sleep(sleepInMillis)
             }
 
-        } catch (ex: InterruptedException) {
-            DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
 
-        } catch (ex: IOException) {
-            DirectoryWatcher.LOG.warn("", ex)
+            // if the watched directed gets deleted, break loop
+            if (!watchKey.reset()) {
+                DirectoryWatcher.LOG.warn("No longer valid")
+                watchKey.cancel()
+                watchService.close()
+                break
+            }
         }
+
+    } catch (ex: InterruptedException) {
+        DirectoryWatcher.LOG.warn("Interrupted. Goodbye")
+
+    } catch (ex: IOException) {
+        DirectoryWatcher.LOG.warn("", ex)
+    }
 
 }
 
