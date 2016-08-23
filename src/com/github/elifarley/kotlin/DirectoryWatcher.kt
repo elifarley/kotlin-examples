@@ -51,6 +51,9 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
 fun String.watchDir(executor: ExecutorService = Executors.newSingleThreadExecutor())
         = DirectoryWatcher(this, executor)
 
+fun String.watchDirLoop(pathHandler: PathHandler, sleepInMillis: Long = 5000, executor: ExecutorService = Executors.newFixedThreadPool(2))
+        = executor.execute({ this.watchDir(executor).loop(pathHandler, sleepInMillis) })
+
 fun Path.enqueueEvents(eventQueue: ConcurrentLinkedQueue<Path> = ConcurrentLinkedQueue<Path>(),
                        sleepInMillis: Long = 500, executor: ExecutorService = Executors.newSingleThreadExecutor(),
                        kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): ConcurrentLinkedQueue<Path> {
