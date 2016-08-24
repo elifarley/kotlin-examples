@@ -10,10 +10,10 @@ interface PathHandler {
     fun handle(path: Path)
 }
 
-fun Path.handleExistingFiles(pathHandler: PathHandler) =
+fun Path.handleExistingFiles(pathHandler: (Path) -> Unit) =
         Files.newDirectoryStream(this) { entry -> !Files.isDirectory(entry) }.use { directoryStream ->
             for (path in directoryStream) {
-                pathHandler.handle(path)
+                pathHandler(path)
             }
         }
 
@@ -26,7 +26,7 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
     private val queue = ConcurrentLinkedQueue<Path>()
 
     init {
-        executor.execute({ rootPath.enqueuePaths(this.queue) })
+        executor.execute { rootPath.enqueuePaths(this.queue) }
         LOG.warn("STARTED watching dir ${rootPath.toAbsolutePath()}")
     }
 
@@ -45,9 +45,9 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
         return result
     }
 
-    fun loop(pathHandler: PathHandler, sleepInMillis: Long = 5000) {
+    fun loop(pathHandler: (Path) -> Unit, sleepInMillis: Long = 5000) {
         while (!Thread.currentThread().isInterrupted) {
-            pathHandler.handle(waitNext(sleepInMillis))
+            pathHandler(waitNext(sleepInMillis))
         }
 
     }
@@ -56,8 +56,8 @@ class DirectoryWatcher(rootPathArg: String, executor: ExecutorService = Executor
 fun String.watchDir(executor: ExecutorService = Executors.newSingleThreadExecutor())
         = DirectoryWatcher(this, executor)
 
-fun String.watchDirLoop(pathHandler: PathHandler, sleepInMillis: Long = 5000, executor: ExecutorService = Executors.newFixedThreadPool(2))
-        = executor.execute({ this.watchDir(executor).loop(pathHandler, sleepInMillis) })
+fun String.watchDirLoop(pathHandler: (Path) -> Unit, sleepInMillis: Long = 5000, executor: ExecutorService = Executors.newFixedThreadPool(2))
+        = executor.execute { this.watchDir(executor).loop(pathHandler, sleepInMillis) }
 
 fun Path.enqueuePaths(eventQueue: ConcurrentLinkedQueue<Path>,
                       sleepInMillis: Long = 500, kind: WatchEvent.Kind<Path> = StandardWatchEventKinds.ENTRY_CREATE): Unit {
@@ -65,12 +65,7 @@ fun Path.enqueuePaths(eventQueue: ConcurrentLinkedQueue<Path>,
     Thread.currentThread().name = "enqueuePaths[$kind:${this.toAbsolutePath()}]"
     try {
 
-        this.handleExistingFiles(
-                object : PathHandler {
-                    override fun handle(path: Path) {
-                        eventQueue.add(path)
-                    }
-                })
+        this.handleExistingFiles { eventQueue.add(it) }
 
         val watchService = this@enqueuePaths.fileSystem.newWatchService()
         this@enqueuePaths.register(watchService, kind)
