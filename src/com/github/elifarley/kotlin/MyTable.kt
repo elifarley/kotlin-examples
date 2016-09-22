@@ -39,6 +39,10 @@ SET NOCOUNT OFF;
 end;
 */
 
+// ------------
+// Model
+// ------------
+
 @NamedStoredProcedureQueries(
         NamedStoredProcedureQuery(name = "myTableUpsert", procedureName = "my_table_upsert",
                 parameters = arrayOf(
@@ -48,16 +52,7 @@ end;
                 )
         )
 )
-@Entity
-@Table(name = "MY_TABLE")
-class MyTable {
-
-    @Id
-    @Column(name = "CREATED", updatable = false, insertable = false, nullable = false, columnDefinition = "DATETIME")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var created: Date? = null
-
-}
+@Entity class MyTable (@Id var dummy: Serializable? = null)
 
 // ------------
 // Repository
@@ -70,9 +65,41 @@ import org.springframework.data.repository.query.Param
 import java.math.BigDecimal
 import java.util.Date
 
-interface MyTableRepository : JpaRepository<MyTable, Date> {
+interface MyTableRepository : JpaRepository<MyTable, Serializable> {
 
     @Procedure(name = "myTableUpsert")
     fun upsert(@Param("fk_type_id") fk_type_id: Integer, @Param("date") date: Date, @Param("value") value: BigDecimal)
+
+    @Query(nativeQuery = true, value = """
+select top 1 value from my_table
+where my_fk_id=1 and date <= :date
+order by date desc
+""")
+    fun findValueForDate(@Param("date") date: Date): BigDecimal?
+
+}
+
+
+// ------------
+// Service
+// ------------
+
+@Service
+open class MyTableService
+@Autowired
+constructor(private val myTableRepository: MyTableRepository) {
+
+    companion object : WithLogging() {}
+
+    @Transactional
+    open fun upsert(fk_type_id: Int, valueAtDate: MyParser.ValueAtDate) {
+
+        var date = valueAtDate.date
+        date = date.withDayOfMonth(1)
+        LOG.info("[indexId: $indexId; $valueAtDate]")
+        myTableRepository.upsert(fk_type_id as Integer, java.sql.Date.valueOf(date), valueAtDate.value)
+    }
+
+    open fun findValueForDate(date: Date) = myTableRepository.findValueForDate(date) ?: BigDecimal.ZERO!!
 
 }
