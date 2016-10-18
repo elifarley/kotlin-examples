@@ -20,16 +20,15 @@ object DateTimeKit {
     fun LocalDate.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = this.atStartOfDay().toDate(zoneOffset)
 
     @JvmOverloads
-    fun LocalDateTime.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = Date.from(this.toInstant(zoneOffset))
+    fun LocalDateTime.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = Date.from(this.toInstant(zoneOffset))!!
 
     @JvmOverloads
-    fun Instant.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneOffset)
+    fun Instant.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneOffset)!!
 
     fun Instant.toGregorianCalendar() =
         GregorianCalendar.from(ZonedDateTime.ofInstant(this, ZoneOffset.UTC))
 
     val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss").withZone(ZoneOffset.UTC)!!
     fun DateTimeFormatter.format(date: Date) = this.format(date.toInstant())!!
-
 
 }
