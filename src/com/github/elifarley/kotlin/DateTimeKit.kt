@@ -25,6 +25,9 @@ object DateTimeKit {
     @JvmOverloads
     fun Instant.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneOffset)!!
 
+    @JvmOverloads
+    fun Date.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = this.toInstant().toLocalDateTime(zoneOffset)
+
     fun Instant.toGregorianCalendar() =
         GregorianCalendar.from(ZonedDateTime.ofInstant(this, ZoneOffset.UTC))
 
