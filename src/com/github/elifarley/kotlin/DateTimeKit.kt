@@ -23,10 +23,13 @@ object DateTimeKit {
     fun LocalDateTime.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = Date.from(this.toInstant(zoneOffset))!!
 
     @JvmOverloads
-    fun Instant.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneOffset)!!
+    fun Instant.toLocalDateTime(zoneId: ZoneId = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneId)!!
 
     @JvmOverloads
-    fun Date.toLocalDateTime(zoneOffset: ZoneOffset = ZoneOffset.UTC) = this.toInstant().toLocalDateTime(zoneOffset)
+    fun Date.toLocalDateTime(zoneId: ZoneId = ZoneOffset.UTC) = when {
+        this is java.sql.Date -> Date(this.time).toInstant().toLocalDateTime(zoneId)
+        else -> this.toInstant().toLocalDateTime(zoneId)
+    }
 
     fun Instant.toGregorianCalendar() =
         GregorianCalendar.from(ZonedDateTime.ofInstant(this, ZoneOffset.UTC))
