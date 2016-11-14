@@ -7,14 +7,20 @@ import java.time.LocalDateTime
 import javax.persistence.AttributeConverter
 import javax.persistence.Converter
 
+/* To enable autoApplpy:
+@SpringBootApplication
+@EntityScan(basePackages = { "com.orgecc.persistence", "com.orgecc.myproj.model", ... })
+public class Application {
+*/
+
 @Converter(autoApply = true)
 class LocalDate2Date : AttributeConverter<LocalDate, Date> {
 
-    override fun convertToDatabaseColumn(localDateTime: LocalDate?): Date? {
-        return Date.valueOf(localDateTime ?: return null)
+    override fun convertToDatabaseColumn(localDate: LocalDate?): Date? {
+        return Date.valueOf(localDate ?: return null)
     }
 
-    override fun convertToEntityAttribute(sqlTimestamp: Date?): LocalDate? = sqlTimestamp?.toLocalDate()
+    override fun convertToEntityAttribute(sqlDate: Date?): LocalDate? = sqlDate?.toLocalDate()
 
 }
 
