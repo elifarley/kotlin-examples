@@ -13,28 +13,43 @@ import java.util.*
 
 object DateTimeKit {
 
-    @JvmOverloads
-    fun TemporalAccessor.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = LocalDateTime.from(this).toDate(zoneOffset)
+    fun toZoneOffset(localDateTime: LocalDateTime, zoneId: ZoneId? = null): ZoneOffset {
+
+        val lzid = zoneId ?: ZoneId.systemDefault()
+
+        val trans = lzid.rules.getTransition(localDateTime) ?:
+                // Normal case: only one valid offset
+                return lzid.rules.getOffset(localDateTime)
+
+        // Gap or Overlap: determine what to do from transition
+        logger(DateTimeKit.javaClass).warn("[toZoneOffset] {}", trans.toString(), RuntimeException("Timezone transition found"))
+
+        return lzid.rules.getOffset(localDateTime)
+
+    }
 
     @JvmOverloads
-    fun LocalDate.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = this.atStartOfDay().toDate(zoneOffset)
+    fun TemporalAccessor.toDate(zoneId: ZoneId? = null) = LocalDateTime.from(this).toDate(zoneId)
 
     @JvmOverloads
-    fun LocalDateTime.toDate(zoneOffset: ZoneOffset = ZoneOffset.UTC) = Date.from(this.toInstant(zoneOffset))!!
+    fun LocalDate.toDate(zoneId: ZoneId? = null) = this.atStartOfDay().toDate(zoneId)
 
     @JvmOverloads
-    fun Instant.toLocalDateTime(zoneId: ZoneId = ZoneOffset.UTC) = LocalDateTime.ofInstant(this, zoneId)!!
+    fun LocalDateTime.toDate(zoneId: ZoneId? = null): Date {
+        return Date.from(this.toInstant(toZoneOffset(this, zoneId)))!!
+    }
 
     @JvmOverloads
-    fun Date.toLocalDateTime(zoneId: ZoneId = ZoneOffset.UTC) = when {
+    fun Instant.toLocalDateTime(zoneId: ZoneId? = null) = LocalDateTime.ofInstant(this, zoneId ?: ZoneId.systemDefault())!!
+
+    @JvmOverloads
+    fun Date.toLocalDateTime(zoneId: ZoneId? = null) = when {
+        // java.sql.Date doesn't have time information, so we need to create a java.util.Date instance out of it
         this is java.sql.Date -> Date(this.time).toInstant().toLocalDateTime(zoneId)
         else -> this.toInstant().toLocalDateTime(zoneId)
     }
 
-    fun Instant.toGregorianCalendar() =
-        GregorianCalendar.from(ZonedDateTime.ofInstant(this, ZoneOffset.UTC))
-
-    val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss").withZone(ZoneOffset.UTC)!!
+    val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss").withZone(ZoneId.systemDefault())!!
     fun DateTimeFormatter.format(date: Date) = this.format(date.toInstant())!!
 
 }
