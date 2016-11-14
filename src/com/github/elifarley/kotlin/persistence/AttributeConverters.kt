@@ -1,4 +1,4 @@
-package com.github.elifarley.kotlin.persistence
+package com.orgecc.persistence
 
 import java.sql.Date
 import java.sql.Timestamp
