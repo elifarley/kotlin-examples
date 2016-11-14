@@ -1,6 +1,5 @@
-package inotify
+package com.orgecc.myproj
 
-import com.m4u.cielo.ws.pushnotification.unit
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
@@ -8,6 +7,8 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 
 @SpringBootApplication
+@EntityScan(basePackages = { "com.orgecc.persistence", "com.orgecc.myproj.model" })
+@EnableJpaRepositories(basePackages = { "com.orgecc.myproj.repository" })
 open class Application {
 
     private val executorService = Executors.newFixedThreadPool(2)
