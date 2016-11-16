@@ -51,3 +51,15 @@ interface Loggable {
  * Usage example: `companion object: WithLogging() {}`
  */
 abstract class WithLogging { val LOG: Logger by lazyLogger() }
+
+class MDCCloseable(): Closeable {
+
+    private val keys = mutableSetOf<String>()
+
+    fun put(key: String, value: Any?) = MDC.put(key.apply { keys.add(this) }, value.toString())
+    fun get(key: String): String? = MDC.get(key)
+    fun remove(key: String) = MDC.remove(key.apply { keys.remove(this) })
+
+    override fun close() = keys.forEach { MDC.remove(it) }
+
+}
