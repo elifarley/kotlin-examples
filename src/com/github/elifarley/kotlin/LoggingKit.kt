@@ -56,10 +56,14 @@ class MDCCloseable(): Closeable {
 
     private val keys = mutableSetOf<String>()
 
-    fun put(key: String, value: Any?) = MDC.put(key.apply { keys.add(this) }, value.toString())
+    fun put(key: String, value: Any?): MDCCloseable {
+        MDC.put(key.apply { keys.add(this) }, value.toString())
+        return this
+    }
     fun get(key: String): String? = MDC.get(key)
     fun remove(key: String) = MDC.remove(key.apply { keys.remove(this) })
 
     override fun close() = keys.forEach { MDC.remove(it) }
 
 }
+
