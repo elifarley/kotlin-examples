@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="120 seconds" packagingData="false">
+
+  <!-- To enable debugging of Logback itself:
+  -Dlogback.debug=true
+  -->
+
+  <property name="computed-configuration" value="logback-text.xml" scope="local" />
+
+  <if condition='!isDefined("LOGBACK_NO_JSON")'><then>
+
+    <if condition='isDefined("LOGBACK_JSON")'><then>
+      <property name="computed-configuration" value="logback-json.xml" scope="local" />
+    </then></if>
+
+    <if condition='p("HOME").startsWith("/app")'><then> <!-- Docker -->
+      <property name="computed-configuration" value="logback-json.xml" scope="local" />
+    </then></if>
+
+  </then></if>
+
+  <include resource="${LOGBACK_CONFIGURATION_FILE:-${computed-configuration}}" />
+
+  <include resource="logback-common.xml" />
+
+  <include resource="logback-extra.xml" optional="true" />
+
+</configuration>
