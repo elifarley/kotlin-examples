@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+
+  <logger name="com.orgecc.myapp" level="DEBUG" />
+  <logger name="org.springframework" level="INFO" />
+  <logger name="org.springframework.ws.client.MessageTracing">
+    <level value="TRACE"/>
+  </logger>
+  <logger name="org.springframework.ws.server.MessageTracing">
+    <level value="TRACE"/>
+  </logger>
+
+  <logger name="org.springframework.integration.mail.ImapMailReceiver">
+    <level value="ERROR" />
+  </logger>
+
+</included>
