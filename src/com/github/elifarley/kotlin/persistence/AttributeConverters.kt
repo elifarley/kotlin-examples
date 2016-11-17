@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import javax.persistence.AttributeConverter
 import javax.persistence.Converter
 
-/* To enable autoApplpy:
+/* To enable autoApply:
 @SpringBootApplication
 @EntityScan(basePackages = { "com.orgecc.persistence", "com.orgecc.myproj.model", ... })
 public class Application {
