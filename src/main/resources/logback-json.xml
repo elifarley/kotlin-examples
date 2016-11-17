@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <!--<timeZone>UTC</timeZone>-->
+      <timeZone>Brazil/East</timeZone>
+      <includeContext>false</includeContext>
+      <includeCallerData>false</includeCallerData>
+      <fieldNames class="net.logstash.logback.fieldnames.ShortenedFieldNames">
+        <timestamp>@</timestamp>
+        <message>m</message>
+        <logger>l</logger>
+        <thread>t</thread>
+        <level>p</level>
+        <levelValue>[ignore]</levelValue>
+        <version>[ignore]</version>
+      </fieldNames>
+      <shortenedLoggerNameLength>20</shortenedLoggerNameLength>
+      <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+        <rootCauseFirst>true</rootCauseFirst>
+        <shortenedClassNameLength>260</shortenedClassNameLength>
+        <maxDepthPerThrowable>5</maxDepthPerThrowable>
+        <maxLength>2048</maxLength>
+        <exclude>sun\.reflect\..*\.invoke.*</exclude>
+        <exclude>com\.sun\..*</exclude>
+        <exclude>sun\.net\..*</exclude>
+        <exclude>net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>
+        <exclude>org\.springframework\.cglib\..*</exclude>
+        <exclude>org\.springframework\.transaction\..*</exclude>
+        <exclude>org\.springframework\.validation\..*</exclude>
+        <exclude>org\.springframework\.app\..*</exclude>
+        <exclude>org\.springframework\.aop\..*</exclude>
+        <exclude>java\.lang\.reflect\.Method\.invoke</exclude>
+        <exclude>org\.springframework\.ws\..*\.invoke</exclude>
+        <exclude>org\.springframework\.ws\.transport\..*</exclude>
+        <exclude>org\.springframework\.ws\.soap\.saaj\.SaajSoapMessage\.*</exclude>
+        <exclude>org\.springframework\.ws\.client\.core\.WebServiceTemplate\..*</exclude>
+        <exclude>org\.springframework\.web\.filter\..*</exclude>
+        <exclude>org\.springframework\.boot\.actuate\.autoconfigure\.MetricFilterAutoConfiguration\.*</exclude>
+        <exclude>org\.apache\.tomcat\..*</exclude>
+        <exclude>org\.apache\.catalina\..*</exclude>
+        <exclude>org\.apache\.coyote\..*</exclude>
+        <exclude>java\.util\.concurrent\.ThreadPoolExecutor\.runWorker.*</exclude>
+      </throwableConverter>
+    </encoder>
+  </appender>
+
+  <root level="ERROR">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</included>
