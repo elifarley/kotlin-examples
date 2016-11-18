@@ -52,18 +52,28 @@ interface Loggable {
  */
 abstract class WithLogging { val LOG: Logger by lazyLogger() }
 
+
+inline fun String.prefixWith(prefix: String?) = if (prefix == null) this else prefix + this
+
 class MDCCloseable(): Closeable {
 
     private val keys = mutableSetOf<String>()
 
+    @JvmOverloads
+    fun putAll(map: Map<String, Any?>, prefix: String? = null): MDCCloseable {
+        map.forEach {
+            MDC.put(it.key.prefixWith(prefix).apply { keys.add(this) }, it.value.toString())
+        }
+        return this
+    }
     fun put(key: String, value: Any?): MDCCloseable {
         MDC.put(key.apply { keys.add(this) }, value.toString())
         return this
     }
     fun get(key: String): String? = MDC.get(key)
+    fun clear() { keys.forEach { MDC.remove(it) }; keys.clear() }
     fun remove(key: String) = MDC.remove(key.apply { keys.remove(this) })
 
-    override fun close() = keys.forEach { MDC.remove(it) }
+    override fun close() = clear()
 
 }
-
