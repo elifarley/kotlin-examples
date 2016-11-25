@@ -2,7 +2,6 @@ package com.orgecc.textfile
 
 import com.orgecc.utils.DateTimeKit.format
 import java.nio.file.Path
-import java.sql.ResultSet
 import java.time.LocalDate
 
 /**
@@ -13,14 +12,14 @@ fun String.addDateTimeSequence(date: java.util.Date, seq: Int) = this +
 
 open class ReportLogConfig(val reportName: String, val lineLength: Int)
 
-abstract class ReportLogDBReaderConfig<out E: Any>(
+abstract class ReportLogDBReaderConfig<in I: Any, out E: Any>(
         reportName: String,
         lineLength: Int,
         val listQuery: String,
         val useNewWriter: (streamName: String, filePath: Path, block: (WriterWithDigest) -> Unit) -> Unit
 ): ReportLogConfig(reportName,lineLength) {
 
-    abstract fun toObject(rs: ResultSet): E
+    abstract fun toObject(rs: I): E
 
 }
 
