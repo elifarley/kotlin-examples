@@ -16,7 +16,7 @@ import java.util.*
 import javax.sql.DataSource
 
 abstract class ReportLogHandlerDBReader<out E: Any> (
-        config: ReportLogDBReaderConfig<E>,
+        config: ReportLogDBReaderConfig<ResultSet, E>,
         dataSource: DataSource
         )
 : ReportLogHandler(config, dataSource) {
@@ -36,8 +36,8 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
 
     }
 
-    override val config: ReportLogDBReaderConfig<E>
-        get() = super.config as ReportLogDBReaderConfig<E>
+    override val config: ReportLogDBReaderConfig<ResultSet, E>
+        get() = super.config as ReportLogDBReaderConfig<ResultSet, E>
 
     private fun asResultSetHandler(objectHandler: (E) -> Unit): (rs: ResultSet) -> Unit =
             { it -> objectHandler(config.toObject(it)) }
@@ -206,4 +206,3 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
     }
 
 }
-
