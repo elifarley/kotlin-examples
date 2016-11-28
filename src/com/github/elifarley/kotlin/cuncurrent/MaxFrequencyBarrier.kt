@@ -26,7 +26,7 @@ private constructor (itemsPerSecond: Double) {
 
             if (toSleep > 0) {
                 lastMillis += millisStep * itemCount
-                Thread.sleep(toSleep.toLong())
+                Thread.sleep(toSleep)
 
             } else {
                 lastMillis = now + millisStep * itemCount
