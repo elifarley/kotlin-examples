@@ -7,7 +7,9 @@ import javax.sql.DataSource
 
 open class ReportLogHandler(open val config: ReportLogConfig, dataSource: DataSource) {
 
-    companion object : WithLogging()
+    companion object : WithLogging() {
+        val barrier = MaxFrequencyBarrier.newInstance(.9)
+    }
 
     protected val jdbcTemplate: JdbcTemplate
 
@@ -24,8 +26,9 @@ open class ReportLogHandler(open val config: ReportLogConfig, dataSource: DataSo
             " (REPORT_NAME, LAST_SEQUENCE_NUMBER, LAST_DATE_PARAM, MD5, ELAPSED_MILLIS, ITEM_COUNT)" +
             " values (?,?,?,?,?,?)"
 
-    fun insert(lastSequenceNumber: Int, lastDateParam: Date, md5: String, itemCount: Int, elapsedMillis: Int) {
+    fun insert(lastSequenceNumber: Int, lastDateParam: Date, md5: ByteArray, itemCount: Int, elapsedMillis: Int) {
 
+        barrier.await()
         val updated = jdbcTemplate.update(
                 onSuccessSQL, config.reportName, lastSequenceNumber, lastDateParam, md5, elapsedMillis, itemCount
         )
