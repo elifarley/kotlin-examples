@@ -1,6 +1,11 @@
-class MaxFrequencyBarrier(itemsPerSecond: Int = 1) {
+package com.orgecc.concurrent
+
+class MaxFrequencyBarrier
+private constructor (itemsPerSecond: Int = 1) {
 
     companion object {
+
+        fun newInstance(itemsPerSecond: Int = 1) = MaxFrequencyBarrier(itemsPerSecond)
 
         var lastMillis = System.currentTimeMillis()
 
@@ -21,7 +26,7 @@ class MaxFrequencyBarrier(itemsPerSecond: Int = 1) {
             }
 
         }
-        
+
     }
 
     val millisStep: Int
