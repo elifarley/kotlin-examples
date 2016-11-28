@@ -1,11 +1,11 @@
 package com.orgecc.concurrent
 
 class MaxFrequencyBarrier
-private constructor (itemsPerSecond: Int = 1) {
+private constructor (itemsPerSecond: Double) {
 
     companion object {
 
-        fun newInstance(itemsPerSecond: Int = 1) = MaxFrequencyBarrier(itemsPerSecond)
+        fun newInstance(itemsPerSecond: Double = 1e0) = MaxFrequencyBarrier(itemsPerSecond)
 
         var lastMillis = System.currentTimeMillis()
 
@@ -17,7 +17,7 @@ private constructor (itemsPerSecond: Int = 1) {
             val toSleep = lastMillis - now
 
             if (toSleep > 0) {
-                lastMillis = now + toSleep + millisStep * itemCount
+                lastMillis += millisStep * itemCount
                 Thread.sleep(toSleep.toLong())
 
             } else {
@@ -32,7 +32,7 @@ private constructor (itemsPerSecond: Int = 1) {
     val millisStep: Int
 
     init {
-        millisStep = 1000 / itemsPerSecond
+        millisStep = (1000 / itemsPerSecond).toInt()
     }
 
     fun await(itemCount: Int = 1) = MaxFrequencyBarrier.await(millisStep, itemCount)
