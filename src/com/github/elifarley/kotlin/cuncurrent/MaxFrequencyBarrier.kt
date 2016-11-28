@@ -3,6 +3,14 @@ package com.orgecc.concurrent
 class MaxFrequencyBarrier
 private constructor (itemsPerSecond: Double) {
 
+    val millisStep: Int
+
+    init {
+        millisStep = (1000 / itemsPerSecond).toInt()
+    }
+
+    fun await(itemCount: Int = 1) = MaxFrequencyBarrier.await(millisStep, itemCount)
+
     companion object {
 
         fun newInstance(itemsPerSecond: Double = 1e0) = MaxFrequencyBarrier(itemsPerSecond)
@@ -28,13 +36,5 @@ private constructor (itemsPerSecond: Double) {
         }
 
     }
-
-    val millisStep: Int
-
-    init {
-        millisStep = (1000 / itemsPerSecond).toInt()
-    }
-
-    fun await(itemCount: Int = 1) = MaxFrequencyBarrier.await(millisStep, itemCount)
 
 }
