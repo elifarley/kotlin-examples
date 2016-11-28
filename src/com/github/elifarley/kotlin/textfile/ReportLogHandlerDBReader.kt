@@ -134,7 +134,7 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
 
                 writerWithDigest.flush()
 
-                val md5 = writerWithDigest.digest.toHexString()
+                val md5 = writerWithDigest.digest
 
                 val outputFileSize: Long = try {
                     Files.size(outputFile)
@@ -146,7 +146,7 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
 
                 val elapsedMillis = stopWatch.stopIfRunning().time.let {
                     if (it <= Int.MAX_VALUE) it.toInt() else {
-                        LOG.warn("[report] Operation took too long to complete ({} ms).")
+                        LOG.warn("[report] Operation took too long to complete ({} ms).", it)
                         Int.MAX_VALUE
                     }
                 }
@@ -165,11 +165,11 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
                         "output-file" to outputFile.toString(),
                         "total-line-count" to detailLineCount + 2,
                         "file-size" to outputFileSize,
-                        "md5" to md5,
+                        "md5" to md5.toHexString(),
                         "line-length" to config.lineLength
                 ))
 
-                val computedLineCount = BigDecimal.valueOf(outputFileSize.toDouble()).div(BigDecimal.valueOf(config.lineLength.toLong())).stripTrailingZeros()
+                val computedLineCount = BigDecimal(outputFileSize.toString()).div(BigDecimal.valueOf(config.lineLength.toLong())).stripTrailingZeros()
 
                 if (outputFileSize >= 0 && computedLineCount != BigDecimal.valueOf(detailLineCount + 2L)) {
                     LOG.error(marker, "[report] Computed line count ({}) doesn't match actual line count ({})!", computedLineCount, detailLineCount + 2)
@@ -206,3 +206,4 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
     }
 
 }
+
