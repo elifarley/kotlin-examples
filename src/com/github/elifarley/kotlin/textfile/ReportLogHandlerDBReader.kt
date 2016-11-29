@@ -169,10 +169,10 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
                         "line-length" to config.lineLength
                 ))
 
-                val computedLineCount = BigDecimal(outputFileSize.toString()).div(BigDecimal.valueOf(config.lineLength.toLong())).stripTrailingZeros()
+                val computedLineCount = BigDecimal.valueOf(outputFileSize).div(BigDecimal.valueOf(config.lineLength.toLong()))
 
-                if (outputFileSize >= 0 && computedLineCount != BigDecimal.valueOf(detailLineCount + 2L)) {
-                    LOG.error(marker, "[report] Computed line count ({}) doesn't match actual line count ({})!", computedLineCount, detailLineCount + 2)
+                if (outputFileSize >= 0 && 0 != computedLineCount.compareTo(BigDecimal.valueOf(detailLineCount + 2L))) {
+                    LOG.error(marker, "[report] Computed line count ({}) doesn't match actual line count ({})!", computedLineCount.toPlainString(), detailLineCount + 2)
                     LOG.error(marker, "[report] Finished (with ERROR) '{}-{}': {} data lines in {}{}",
                             config.reportName, fileSeq, detailLineCount, stopWatch, ips
                     )
@@ -206,4 +206,3 @@ abstract class ReportLogHandlerDBReader<out E: Any> (
     }
 
 }
-
