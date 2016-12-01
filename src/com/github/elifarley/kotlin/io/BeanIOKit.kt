@@ -1,8 +1,5 @@
 package com.orgecc.util.io
 
-import com.m4u.util.io.IOWithDigest
-import com.m4u.util.io.digestInputStream
-import com.m4u.util.io.digestOutputStream
 import org.beanio.BeanReader
 import org.beanio.BeanWriter
 import org.beanio.StreamFactory
