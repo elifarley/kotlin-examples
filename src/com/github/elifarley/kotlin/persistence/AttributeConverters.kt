@@ -1,4 +1,4 @@
-package com.orgecc.persistence
+package com.orgecc.util.persistence
 
 import java.sql.Date
 import java.sql.Timestamp
@@ -7,9 +7,10 @@ import java.time.LocalDateTime
 import javax.persistence.AttributeConverter
 import javax.persistence.Converter
 
-/* To enable autoApply:
+// To enable autoApply:
+/*
 @SpringBootApplication
-@EntityScan(basePackages = { "com.orgecc.persistence", "com.orgecc.myproj.model", ... })
+@EntityScan(basePackages = { "com.orgecc.util.persistence", "com.orgecc.myapp.model", ... })
 public class Application {
 */
 
