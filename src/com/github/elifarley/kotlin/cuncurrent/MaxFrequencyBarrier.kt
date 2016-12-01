@@ -1,7 +1,11 @@
 package com.orgecc.concurrent
 
+interface EventBarrier {
+    fun await(itemCount: Int = 1)
+}
+
 class MaxFrequencyBarrier
-private constructor (itemsPerSecond: Double) {
+private constructor (itemsPerSecond: Double) : EventBarrier {
 
     val millisStep: Int
 
@@ -9,11 +13,11 @@ private constructor (itemsPerSecond: Double) {
         millisStep = (1000 / itemsPerSecond).toInt()
     }
 
-    fun await(itemCount: Int = 1) = MaxFrequencyBarrier.await(millisStep, itemCount)
+    override fun await(itemCount: Int) = MaxFrequencyBarrier.await(millisStep, itemCount)
 
     companion object {
 
-        fun newInstance(itemsPerSecond: Double = 1e0) = MaxFrequencyBarrier(itemsPerSecond)
+        fun newInstance(itemsPerSecond: Double = 1e0): EventBarrier = MaxFrequencyBarrier(itemsPerSecond)
 
         var lastMillis = System.currentTimeMillis()
 
