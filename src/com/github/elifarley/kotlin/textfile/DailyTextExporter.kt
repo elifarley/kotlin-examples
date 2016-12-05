@@ -3,7 +3,7 @@ package com.orgecc.util.textfile
 import com.orgecc.util.DateTimeKit.toDate
 import com.orgecc.util.WithLogging
 import com.orgecc.util.io.IOWithDigest
-import com.orgecc.util.io.createParentDirectories
+import com.orgecc.util.path.createParentDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.sql.ResultSet
