@@ -16,7 +16,10 @@ import java.util.*
 fun String.addDateTimeSequence(date: Date, seq: Int) = this +
         "${DateTimeKit.DATE_FORMATTER.format(date)}-$seq.txt"
 
-open class DailyTextImexConfig(val reportName: String, val lineLength: Int)
+open class DailyTextImexConfig(val reportName: String, val lineLength: Int) {
+    open val fixedLineCount: Int = 2
+    open val fixedLinesAreVirtual = false
+}
 
 abstract class DailyTextImporterConfig(
         reportName: String,
