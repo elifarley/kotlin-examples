@@ -1,6 +1,6 @@
 package com.orgecc.util.textfile
 
-import com.orgecc.persistence.StreamingResultSetEnabledJdbcTemplate
+import com.orgecc.util.persistence.StreamingResultSetEnabledJdbcTemplate
 import com.orgecc.util.MDCCloseable
 import com.orgecc.util.WithLogging
 import com.orgecc.util.concurrent.MaxFrequencyBarrier
@@ -62,8 +62,8 @@ open class DailyTextImex(open val config: DailyTextImexConfig, dataSource: DataS
 
         mdc.put("file-size", fileSize)
 
-        val totalLineCount = detailLineCount + 2L
-        val computedFileSize = totalLineCount * config.lineLength
+        val totalLineCountForSize = detailLineCount + if (!config.fixedLinesAreVirtual) config.fixedLineCount.toLong() else 0
+        val computedFileSize = totalLineCountForSize * config.lineLength
 
         if (fileSize == computedFileSize) return
 
@@ -71,8 +71,8 @@ open class DailyTextImex(open val config: DailyTextImexConfig, dataSource: DataS
                 "Actual file size ($fileSize) is ${computedFileSize - fileSize} bytes smaller than computed file size"
         )
 
-        if (fileSize > computedFileSize + totalLineCount * 2) throw IllegalArgumentException(
-                "Actual file size ($fileSize) is ${fileSize - (computedFileSize + totalLineCount * 2)} bytes bigger than computed file size and extra EOL"
+        if (fileSize > computedFileSize + totalLineCountForSize * 2) throw IllegalArgumentException(
+                "Actual file size ($fileSize) is ${fileSize - (computedFileSize + totalLineCountForSize * 2)} bytes bigger than computed file size and extra EOL"
         )
 
         if (type == Type.EXPORT) throw IllegalArgumentException(
@@ -171,7 +171,7 @@ open class DailyTextImex(open val config: DailyTextImexConfig, dataSource: DataS
             val marker = Markers.appendEntries(mapOf(
                     "start-date" to params.startDate.toString(),
                     "end-date" to params.endDate.toString(),
-                    "total-line-count" to detailLineCount + 2,
+                    "total-line-count" to detailLineCount + config.fixedLineCount,
                     "line-length" to this@DailyTextImex.config.lineLength
             ))
 
