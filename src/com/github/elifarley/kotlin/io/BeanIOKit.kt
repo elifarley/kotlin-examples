@@ -1,5 +1,8 @@
-package com.orgecc.util.io
+package com.orgecc.util.textfile
 
+import com.orgecc.util.io.IOWithDigest
+import com.orgecc.util.io.digestInputStream
+import com.orgecc.util.io.digestOutputStream
 import org.beanio.BeanReader
 import org.beanio.BeanWriter
 import org.beanio.StreamFactory
