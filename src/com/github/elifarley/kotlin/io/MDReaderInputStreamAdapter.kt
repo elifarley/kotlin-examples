@@ -14,20 +14,21 @@ abstract class MDReaderInputStreamAdapter<out D>(protected val mdi: DigestInputS
 
     protected abstract val header: Map<String, Any>
     protected abstract val detailIterable: Iterable<D>
-    protected abstract val trailer: Int
 
+    private var lineCount: Int = 0
     private lateinit var detailIterator: Iterator<D>
 
     override fun read(): Any? = when (state) {
 
-        State.HEADER -> { state = State.DETAIL; detailIterator = detailIterable.iterator(); header }
+        State.HEADER -> { state = State.DETAIL; detailIterator = detailIterable.iterator(); lineCount++; header }
 
-        State.DETAIL -> if (detailIterator.hasNext()) detailIterator.next()
-                        else { state = State.TRAILER; trailer }
+        State.DETAIL -> if (detailIterator.hasNext()) { lineCount++; detailIterator.next() }
+                        else { state = State.TRAILER; ++lineCount }
 
-        State.TRAILER -> { state = State.DONE; null }
+        State.TRAILER -> { state = State.DONE; close(); null }
 
         State.DONE -> throw EOFException()
+        
     }
 
     override fun close() {
@@ -35,4 +36,3 @@ abstract class MDReaderInputStreamAdapter<out D>(protected val mdi: DigestInputS
     }
 
 }
-
