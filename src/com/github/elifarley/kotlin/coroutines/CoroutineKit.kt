@@ -10,9 +10,8 @@ fun <T> delayWhile(
     var result : T?
     while (true) {
         result = block()
-        println("[delayWhile] Predicate: ${result?.predicate() ?: true}")
+        println("[delayWhile] ${System.currentTimeMillis() - start} ms; Predicate: ${result?.predicate() ?: true}") // TODO Remove
         if (! (result?.predicate() ?: true)) break
-        println("[delayWhile] ${System.currentTimeMillis() - start}") // TODO Remove
         delay(Math.min(maxDelayPerItem, System.currentTimeMillis() - start))
     }
     result!!
