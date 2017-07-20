@@ -42,3 +42,33 @@ fun ByteArray.toHex(): String {
 
     return result.toString()
 }
+
+fun String.prompt(defaultValue: Double): Double {
+
+    print(format(defaultValue))
+
+    return readLine().orEmpty().run {
+        if (isNullOrBlank()) defaultValue else this.toDouble()
+    }
+
+}
+
+fun String.prompt(defaultValue: String): String {
+
+    print(format(defaultValue))
+
+    return readLine().orEmpty().run {
+        if (isNullOrBlank()) defaultValue else this
+    }
+
+}
+
+fun String.prompt(): String? {
+
+    print(this)
+
+    return readLine().orEmpty().run {
+        if (isNullOrBlank()) null else this
+    }
+
+}
