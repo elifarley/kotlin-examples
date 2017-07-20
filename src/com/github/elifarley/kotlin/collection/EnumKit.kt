@@ -5,6 +5,12 @@ import java.util.*
 /**
  * Created by elifarley on 28/10/16.
  */
+
+inline fun <reified K : Enum<K>, V> enumMapOf(vararg pairs: Pair<K, V>): MutableMap<K, V> =
+        EnumMap<K, V>(K::class.java).apply {
+            putAll(pairs)
+        }
+
 object EnumKit {
 
     interface GetCode<out C> {
