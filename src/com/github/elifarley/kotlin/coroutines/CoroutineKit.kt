@@ -9,7 +9,7 @@ interface Actor<M> {
     val core: suspend kotlinx.coroutines.experimental.channels.ActorScope<M>.() -> Unit
 }
 
-class ActorOf<in M> private constructor(val actor: ActorJob<M>): ActorJob<M> by actor {
+class ActorOf<in M> private constructor(private val actor: ActorJob<M>): ActorJob<M> by actor {
     companion object {
         operator fun <A: Actor<M>, M> invoke(
                 klass: () -> A,
@@ -17,7 +17,7 @@ class ActorOf<in M> private constructor(val actor: ActorJob<M>): ActorJob<M> by 
                 capacity: Int = 0,
                 start: CoroutineStart = CoroutineStart.DEFAULT
         ): ActorOf<M> =
-            ActorOf(kotlinx.coroutines.experimental.channels.actor<M>(context, capacity, start, klass().core))
+            ActorOf(kotlinx.coroutines.experimental.channels.actor(context, capacity, start, klass().core))
     }
 
     suspend operator fun rem(msg: M) = actor.send(msg)
