@@ -5,6 +5,24 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
 import kotlin.coroutines.experimental.CoroutineContext
 
+interface Actor<M> {
+    val core: suspend kotlinx.coroutines.experimental.channels.ActorScope<M>.() -> Unit
+}
+
+class ActorOf<in M> private constructor(val actor: ActorJob<M>): ActorJob<M> by actor {
+    companion object {
+        operator fun <A: Actor<M>, M> invoke(
+                klass: () -> A,
+                context: CoroutineContext,
+                capacity: Int = 0,
+                start: CoroutineStart = CoroutineStart.DEFAULT
+        ): ActorOf<M> =
+            ActorOf(kotlinx.coroutines.experimental.channels.actor<M>(context, capacity, start, klass().core))
+    }
+
+    suspend operator fun rem(msg: M) = actor.send(msg)
+}
+
 fun <T> delayWhile(
         context: CoroutineContext,
         predicate: (T.() -> Boolean) = {this == null},
