@@ -1,10 +1,7 @@
 package com.orgecc.lib.http
 
+import lib.collections.toPairs
 import java.util.*
-
-/**
- * Created by ecc on 7/30/17.
- */
 
 data class Headers(val pairs: Array<Pair<String, String>>) : List<Pair<String, String>> {
 
