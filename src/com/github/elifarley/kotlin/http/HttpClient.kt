@@ -1,5 +1,5 @@
-
 package com.orgecc.lib.http
+package lib.http
 
 import dao.JsonAny
 import kotlin.coroutines.experimental.suspendCoroutine
@@ -21,10 +21,10 @@ enum class RESULT_TYPE {
 
 abstract class HttpClientAdapter<out HC, ReqBase> {
 
-    abstract val httpclient: HC
-    abstract val toSimpleHeaders: ReqBase.() -> Headers
+    protected abstract val httpclient: HC
+    protected abstract val toSimpleHeaders: ReqBase.() -> Headers
 
-    abstract fun toRequestObject(reqInfo: HttpReqInfo): ReqBase
+    protected abstract fun toRequestObject(reqInfo: HttpReqInfo): ReqBase
     protected abstract fun execute(request: ReqBase, resultType: RESULT_TYPE, callback: (Any?) -> Unit): Unit
 
     override fun toString(): String {
