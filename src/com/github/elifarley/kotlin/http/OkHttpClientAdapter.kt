@@ -6,6 +6,8 @@ import java.io.IOException
 
 class OkHttpClientAdapter : HttpClientAdapter<OkHttpClient, Request>() {
 
+    private val JSON = MediaType.parse("application/json; charset=utf-8")
+
     override val toSimpleHeaders: Request.() -> lib.http.Headers = {
         this.headers().toMultimap().flatMap { (key, value) -> value.map { Pair(key!!, it!!) } }.let {
             Headers(it)
@@ -23,7 +25,7 @@ class OkHttpClientAdapter : HttpClientAdapter<OkHttpClient, Request>() {
                 .url(reqInfo.url)
                 .apply {
             reqInfo.postData?.let {
-                this.post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), it))
+                this.post(RequestBody.create(JSON, it))
             }
         }
 
@@ -43,14 +45,12 @@ class OkHttpClientAdapter : HttpClientAdapter<OkHttpClient, Request>() {
         override fun onResponse(call: Call?, response: Response) = when (resultType) {
             RESULT_TYPE.BYTE_ARRAY -> callback(response.body()?.bytes())
             RESULT_TYPE.STRING -> callback(response.body()?.string())
-            RESULT_TYPE.JSON -> (response.body()?.bytes()?.let { JsonIterator.deserialize(it) })
-                    .let { callback(it) }
+            RESULT_TYPE.JSON -> callback(response.body()?.bytes()?.let(JsonIterator::deserialize))
             else -> throw IllegalArgumentException("Invalid function type: $resultType")
         }
 
             }
 
-    // TODO Use Builders.blocking or Deferred.blockingAsync - https://github.com/Kotlin/kotlinx.coroutines/issues/79
     override fun execute(request: Request, resultType: RESULT_TYPE, callback: (Any?) -> Unit): Unit {
         httpclient.newCall(request).enqueue(resultHandler(resultType, callback))
     }
