@@ -55,6 +55,9 @@ abstract class WithLogging { val LOG: Logger by lazyLogger() }
 
 inline fun String.prefixWith(prefix: String?) = if (prefix == null) this else prefix + this
 
+/**
+ * See https://stackoverflow.com/questions/4165558/best-practices-for-using-markers-in-slf4j-logback
+ **/
 class MDCCloseable(): Closeable {
 
     private val keys = mutableSetOf<String>()
