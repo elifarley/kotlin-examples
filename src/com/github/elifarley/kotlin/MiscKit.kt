@@ -7,6 +7,13 @@ import org.apache.commons.lang3.time.StopWatch
  */
 fun StopWatch.stopIfRunning(): StopWatch { if (!isStopped) stop(); return this }
 
+fun Random.nextInt(range: IntRange): Int {
+    return range.start + nextInt(range.last - range.start)
+}
+
+fun rnd(range: IntRange): Int {
+    return ThreadLocalRandom.current().nextInt(range)
+}
 
 private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
 
