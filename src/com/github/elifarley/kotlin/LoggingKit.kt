@@ -3,7 +3,7 @@ package com.orgecc.logging
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
-import kotlin.reflect.companionObject
+import kotlin.reflect.full.companionObject
 
 /* Dependency:
 		<dependency>
