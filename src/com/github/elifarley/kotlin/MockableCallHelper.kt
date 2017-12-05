@@ -62,6 +62,8 @@ abstract class MockableCallHelper<R>(private val mockFilePropName: String) : Moc
     inline val mockableCall: MockableCall<R> get() = this
     inline val mockableCallResult: MockableCallResult<R> get() = this
 
+    val mockName get() = mockFilePropName.removePrefix("TEST_").removeSuffix("_MOCK_FILE")
+
     private val mockCV = CountingValueImpl<R>()
 
     override var mockResult: R?
@@ -78,12 +80,12 @@ abstract class MockableCallHelper<R>(private val mockFilePropName: String) : Moc
 
     override fun expectCall(result: R?, expectedInitialCallCount: Int, expectedCallCount: Int, block: () -> Unit) = try {
         if (expectedInitialCallCount != mockCV.readCount) {
-            throw IllegalStateException("Expected $expectedInitialCallCount as initial call count, but got ${mockCV.readCount}")
+            throw IllegalStateException("[MOCK: $mockName] Expected $expectedInitialCallCount as initial call count, but got ${mockCV.readCount}")
         }
         if (result != null) mockCV.value = result
         block()
         if (mockCV.readCount != expectedInitialCallCount + expectedCallCount) {
-            throw IllegalStateException("[MOCK: $mockFilePropName] Expected call count: $expectedCallCount; actual: ${mockCV.readCount}")
+            throw IllegalStateException("[MOCK: $mockName] Expected call count: $expectedCallCount; actual: ${mockCV.readCount}")
         }
         Unit
 
@@ -94,7 +96,7 @@ abstract class MockableCallHelper<R>(private val mockFilePropName: String) : Moc
     override fun call(realCall: () -> R): R? =
             if (mockCV.valueIsSet) {
                 mockResult.also {
-                    LOG.error("[MOCK #${mockCV.readCount}: $mockFilePropName] Returning object: {}", it)
+                    LOG.error("[MOCK #${mockCV.readCount}: $mockName] Returning object: {}", it)
                 }
 
             } else System.getProperty(mockFilePropName, System.getenv(mockFilePropName)).let { mockFilePath ->
@@ -103,7 +105,7 @@ abstract class MockableCallHelper<R>(private val mockFilePropName: String) : Moc
                     return realCall()
                 }
 
-                LOG.error("[MOCK: $mockFilePropName] Reading mocked response from '{}'...", mockFilePath)
+                LOG.error("[MOCK: $mockName] Reading mocked response from '{}'...", mockFilePath)
                 importResultFromFile(mockFilePath)
             }
 
