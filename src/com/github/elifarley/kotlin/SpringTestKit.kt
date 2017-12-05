@@ -13,6 +13,6 @@ fun toResponseEntity(m: Map<String, String>): ResponseEntity<String> = ResponseE
         m["http-status"]?.let { HttpStatus.valueOf(it) } ?: HttpStatus.OK
 )
 
-open class CallWithMockSupportForResponseEntity(mockFilePropName: String): CallWithMockSupport<ResponseEntity<String>>(mockFilePropName) {
+open class MockableCallHelperForResponseEntity(mockFilePropName: String) : MockableCallHelper<ResponseEntity<String>>(mockFilePropName) {
     final override val importResultFromMapFun = ::toResponseEntity
 }
