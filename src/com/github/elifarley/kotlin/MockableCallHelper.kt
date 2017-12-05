@@ -12,6 +12,7 @@ abstract class MockableCall<R> {
 
 interface MockableCallResult<R> {
     var mockResult: R?
+    val callCount: Int
     fun resetMockResult()
     fun expectCall(result: R? = null, expectedInitialCallCount: Int = 0, expectedCallCount: Int = 1, block: () -> Unit): Unit
     operator fun invoke(result: R? = null, expectedInitialCallCount: Int = 0, expectedCallCount: Int = 1, block: () -> Unit)
@@ -65,6 +66,8 @@ abstract class MockableCallHelper<R>(private val mockFilePropName: String) : Moc
     val mockName get() = mockFilePropName.removePrefix("TEST_").removeSuffix("_MOCK_FILE")
 
     private val mockCV = CountingValueImpl<R>()
+
+    override val callCount get() = mockCV.readCount
 
     override var mockResult: R?
         get() = mockCV.value
