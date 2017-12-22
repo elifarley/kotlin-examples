@@ -6,7 +6,12 @@ import org.apache.commons.lang3.time.StopWatch
  * Created by elifarley on 22/11/16.
  */
 
-fun <T> Boolean?.exec(block: () -> T ): T? = this?.let { if (this) block() else Unit as T }
+/**
+* Examples:
+* val resultS:  String = (x != 0) % { "Non-zero" } ?: "Zero"
+* val resultD: Double? = (x != 0) % { 5.0 / x }
+**/
+operator fun <T> Boolean?.rem(block: () -> T): T? = this?.let { if (this) block() else Unit as T }
 
 fun StopWatch.stopIfRunning(): StopWatch { if (!isStopped) stop(); return this }
 
