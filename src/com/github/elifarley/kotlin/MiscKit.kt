@@ -11,7 +11,7 @@ import org.apache.commons.lang3.time.StopWatch
 * val resultS:  String = (x != 0) % { "Non-zero" } ?: "Zero"
 * val resultD: Double? = (x != 0) % { 5.0 / x }
 **/
-operator fun <T> Boolean?.rem(block: () -> T): T? = this?.let { if (this) block() else Unit as T }
+operator fun <T> Boolean?.rem(block: () -> T): T? = this?.let { if (this) block() else null }
 
 fun StopWatch.stopIfRunning(): StopWatch { if (!isStopped) stop(); return this }
 
