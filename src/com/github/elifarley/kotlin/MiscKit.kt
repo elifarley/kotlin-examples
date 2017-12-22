@@ -5,6 +5,9 @@ import org.apache.commons.lang3.time.StopWatch
 /**
  * Created by elifarley on 22/11/16.
  */
+
+fun <T> Boolean?.exec(block: () -> T ): T? = this?.let { if (this) block() else Unit as T }
+
 fun StopWatch.stopIfRunning(): StopWatch { if (!isStopped) stop(); return this }
 
 fun Random.nextInt(range: IntRange): Int {
