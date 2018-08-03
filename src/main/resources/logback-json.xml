@@ -3,20 +3,26 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <!--<timeZone>UTC</timeZone>-->
-      <timeZone>Brazil/East</timeZone>
+
       <includeContext>false</includeContext>
       <includeCallerData>false</includeCallerData>
+
+      <!--<timeZone>UTC</timeZone>-->
+      <timeZone>Brazil/East</timeZone>
+      <!--timestampPattern>HH:mm:ss.SSS</timestampPattern-->
       <fieldNames class="net.logstash.logback.fieldnames.ShortenedFieldNames">
-        <timestamp>@</timestamp>
+        <timestamp>[ignore]</timestamp>
+        <!--timestamp>@</timestamp-->
+        <level>p</level>
         <message>m</message>
         <logger>l</logger>
-        <thread>t</thread>
-        <level>p</level>
+        <thread>[ignore]</thread>
         <levelValue>[ignore]</levelValue>
         <version>[ignore]</version>
       </fieldNames>
+
       <shortenedLoggerNameLength>20</shortenedLoggerNameLength>
+
       <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
         <rootCauseFirst>true</rootCauseFirst>
         <shortenedClassNameLength>260</shortenedClassNameLength>
@@ -46,7 +52,7 @@
     </encoder>
   </appender>
 
-  <root level="ERROR">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
   </root>
 
