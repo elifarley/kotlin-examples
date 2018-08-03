@@ -8,6 +8,9 @@
   </appender>
 
   <appender name="FILE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>DEBUG</level>
+    </filter>
     <append>true</append>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <fileNamePattern>logs/application-debug.%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -32,7 +35,7 @@
     </encoder>
   </appender>
 
-  <root level="ERROR">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE_INFO" />
     <appender-ref ref="FILE_DEBUG" />
