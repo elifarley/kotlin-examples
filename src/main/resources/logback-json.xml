@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+<dependency>
+    <groupId>net.logstash.logback</groupId>
+    <artifactId>logstash-logback-encoder</artifactId>
+    <version>6.1</version>
+</dependency>
+-->
 <included>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
