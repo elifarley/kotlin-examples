@@ -5,6 +5,17 @@
     <artifactId>logstash-logback-encoder</artifactId>
     <version>6.1</version>
 </dependency>
+
+https://www.innoq.com/en/blog/structured-logging/
+
+import static net.logstash.logback.argument.StructuredArguments.keyValue;
+import static net.logstash.logback.argument.StructuredArguments.entries;
+import static net.logstash.logback.argument.StructuredArguments.fields;
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static net.logstash.logback.argument.StructuredArguments.array;
+
+log.info("Order saved {}", keyValue("orderId", orderId));
+
 -->
 <included>
 
