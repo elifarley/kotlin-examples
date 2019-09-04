@@ -9,9 +9,9 @@
 https://www.innoq.com/en/blog/structured-logging/
 
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
-import static net.logstash.logback.argument.StructuredArguments.entries;
-import static net.logstash.logback.argument.StructuredArguments.fields;
-import static net.logstash.logback.argument.StructuredArguments.value;
+import static net.logstash.logback.argument.StructuredArguments.entries; // For maps
+import static net.logstash.logback.argument.StructuredArguments.fields; // For objects
+import static net.logstash.logback.argument.StructuredArguments.value; // Adds only the kv's value to msg
 import static net.logstash.logback.argument.StructuredArguments.array;
 
 log.info("Order saved {}", keyValue("orderId", orderId));
