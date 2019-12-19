@@ -4,6 +4,8 @@ import javax.persistence.*
 import java.math.BigDecimal
 import java.util.Date
 
+// See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.stored-procedures
+
 // Insert rows via stored procedure using Spring Data
 
 /*
